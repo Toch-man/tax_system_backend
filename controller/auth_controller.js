@@ -1,44 +1,178 @@
-import userModel from "../model/user.js";
+import User from "../model/userModel";
 import bcrypt from "bcrypt";
-
-export const register = async (req, res) => {
-  try {
-    const { email, lastname, firstname, password } = req.body;
-    const salt = await bcrypt.genSalt(18);
-    const hashedPassword = await bcrypt.hash(password, salt);
-
-    const user = await userModel.create({
-      email,
-      lastname,
-      firstname,
-      password,
-    });
-    return res
-      .status(201)
-      .json({ message: "User registered successfully", user });
-  } catch (error) {
-    return res.status(500).json({ message: "Error registering", error });
-  }
-};
+import jwt from "jsonwebtoken";
 
 export const login = async (req, res) => {
   try {
     const { email, password } = req.body;
 
-    const user = await userModel.findOne({ email });
+    const user = User.findOne({ email });
 
     if (!user) {
-      return res.staus(404).json({ message: "User not found" });
+      return res.status(404).json({
+        success: false,
+        message: "email doesnt exist",
+      });
+    }
+    const password_match = await bcrypt.compare(password, user.password);
+
+    if (!password_match) {
+      return res.status(401).json({
+        success: false,
+        message: "invalid password",
+      });
     }
 
-    const isMatch = await bcrypt.compare(password, user.password);
+    const access_token = jwt.sign(
+      { user_id: user._id, role: user.role },
+      process.env.JWT_ACCESS_SECRET,
+      { expiresIn: "15min" },
+    );
 
-    if (!isMatch) {
-      return res.status(401).json({ message: "invalid password" });
-    }
+    const refresh_token = jwt.sign(
+      { user_id: user._id, role: user.role },
+      process.env.JWT_REFRESH_SECRET,
+      { expiresIn: "7d" },
+    );
 
-    return res.status(200).json({ message: "login successful", user });
+    await User.findByIdAndUpdate(user._id, { refreshToken: refresh_token });
+
+    user.save();
+    res.cookie("access_token", access_token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "strict",
+      maxAge: 15 * 60 * 1000,
+    });
+
+    res.cookie("refresh_token", refresh_token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "strict",
+      maxAge: 7 * 24 * 60 * 60 * 1000,
+    });
+
+    return res.status(200).json({
+      success: true,
+      message: "login successful",
+      data: user,
+    });
   } catch (error) {
-    return res.status(500).json({ message: "Error registering", error });
+    return res.status(500).json({
+      success: false,
+      message: "something went wrong",
+      error,
+    });
+  }
+};
+
+export const sign_up = async (req, res) => {
+  try {
+    const { email, password, role } = req.body;
+
+    const user = await User.findOne({ email });
+
+    if (user) {
+      return res.status(409).json({
+        success: false,
+        message: "user already exist",
+      });
+    }
+
+    const hash_password = await bcrypt.hash(password, 10);
+
+    const new_user = new User({
+      ...req.body,
+    });
+
+    const access_token = jwt.sign(
+      { user_id: user._id, role: user.role },
+      process.env.JWT_ACCESS_SECRET,
+      { expiresIn: "15min" },
+    );
+
+    const refresh_token = jwt.sign(
+      { user_id: user._id, role: user.role },
+      process.env.JWT_REFRESH_SECRET,
+      { expiresIn: "7d" },
+    );
+
+    new_user.refreshToken = refresh_token;
+
+    res.cookie("access_token", access_token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "strict",
+      maxAge: 15 * 60 * 1000,
+    });
+
+    res.cookie("refresh_token", refresh_token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "strict",
+      maxAge: 7 * 24 * 60 * 60 * 1000,
+    });
+
+    new_user.save();
+    return res.status(201).json({
+      success: true,
+      message: "successfull created account",
+      data: user,
+    });
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: "something went wrong",
+      error,
+    });
+  }
+};
+
+export const refresh_token = async (req, res) => {
+  const refresh_token = req.cookie.refresh_token;
+
+  if (!refresh_token) {
+    return res.status(401).json({
+      success: false,
+      message: "no refresh token",
+    });
+  }
+
+  try {
+    const decoded = jwt.verify(refresh_token, process.env.JWT_REFRESH_SECRET);
+    const user = await User.findById(decoded.user_id);
+
+    if (!user || user.refresh_token !== refresh_token) {
+      return res.status(403).json({
+        success: false,
+        message: "invalid token",
+      });
+    }
+
+    const access_token = jwt.sign(
+      {
+        user_id: user._id,
+
+        role: user.role,
+      },
+      process.env.JWT_ACCESS_SECRET,
+      { expiresIn: "15m" },
+    );
+    res.cookie("access_token", access_token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "strict",
+      maxAge: 15 * 60 * 1000,
+    });
+
+    return res.status(200).json({
+      success: true,
+      message: "new token assigned",
+    });
+  } catch (error) {
+    return res.status(403).json({
+      success: false,
+      message: error.message,
+    });
   }
 };

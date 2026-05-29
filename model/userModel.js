@@ -2,7 +2,10 @@ import mongoose from "mongoose";
 
 const userSchema = new mongoose.Schema(
   {
-    name: {
+    first_name: {
+      type: String,
+    },
+    last_name: {
       type: String,
     },
     email: {
@@ -19,9 +22,7 @@ const userSchema = new mongoose.Schema(
       enum: ["user", "admin", "accountant"],
       default: "user",
     },
-    accessToken: {
-      type: String,
-    },
+
     refreshToken: {
       type: String,
     },
