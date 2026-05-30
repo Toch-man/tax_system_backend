@@ -6,7 +6,7 @@ export const login = async (req, res) => {
   try {
     const { email, password } = req.body;
 
-    const user = User.findOne({ email });
+    const user = await User.findOne({ email });
 
     if (!user) {
       return res.status(404).json({
@@ -68,7 +68,7 @@ export const login = async (req, res) => {
 
 export const sign_up = async (req, res) => {
   try {
-    const { email, password, role } = req.body;
+    const { email, password } = req.body;
 
     const user = await User.findOne({ email });
 
