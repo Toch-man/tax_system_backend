@@ -6,16 +6,15 @@ import {
   getHistory,
   deleteHistory
 } from "../controller/tax_controller.js";
-import { authMiddleware } from "../middleware/auth.js";
+import { authenticate } from "../middleware/auth.js";
 
 const router = express.router();
 
 router.post("/calculate", calculate);
 router.get("/rules", getTaxRules);
-router.post("/save", authMiddleware, saveCalculation);
-router.get("/history", authMiddleware, getHistory);
-router.delete("/history/:id", authMiddleware, deleteHistory);
+router.post("/save", authenticate, saveCalculation);
+router.get("/history", authenticate, getHistory);
+router.delete("/history/:id", authenticate, deleteHistory);
 
 export default router;
-
 

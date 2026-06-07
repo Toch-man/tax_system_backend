@@ -4,8 +4,6 @@ import taxRoutes from "./routes/tax_routes.js";
 
 const app = express();
 
-//mongodb connection
-
 
 
 
