@@ -3,9 +3,9 @@ import fs from "fs";
 import fsPromises from "fs/promises";
 import path from "path";
 
-import TaxHistory from "../model/taxHistory.js";
-import User from "../model/userModel.js";
-import GeneratedReport from "../model/generated.reports.model.js";
+import TaxHistory from "../models/taxHistory.js";
+import User from "../models/userModel.js";
+import GeneratedReport from "../models/generatedReportsModel.js";
 
 const REPORT_DIR = path.resolve("reports");
 

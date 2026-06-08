@@ -1,5 +1,5 @@
 import fs from "fs";
-import GeneratedReport from "../model/generated.reports.model.js";
+import GeneratedReport from "../models/generatedReportsModel.js";
 
 export const downloadReport = async (req, res) => {
   try {

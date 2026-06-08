@@ -4,17 +4,18 @@ import {
   individualPdf,
   payrollCsv,
   payrollExcel,
-} from "../controller/report.controller.js";
+} from "../controllers/report.controller.js";
 
-import { downloadReport } from "../controller/download.controller.js";
-import { authenticate } from "../middleware/auth.js";
+import { downloadReport } from "../controllers/download.controller.js";
+import { authenticate } from "../middlewares/auth.js";
 
 const router = express.Router();
+router.use(authenticate); // All routes require authentication
 
-router.get("/individual/pdf", authenticate, individualPdf);
-router.post("/payroll/csv", authenticate, payrollCsv);
-router.post("/payroll/excel", authenticate, payrollExcel);
-router.get("/:id/download", authenticate, downloadReport);
+router.get("/individual/pdf", individualPdf);
+router.post("/payroll/csv", payrollCsv);
+router.post("/payroll/excel", payrollExcel);
+router.get("/:id/download", downloadReport);
 
 export default router;
 

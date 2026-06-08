@@ -5,8 +5,8 @@ import {
   saveCalculation,
   getHistory,
   deleteHistory
-} from "../controller/tax_controller.js";
-import { authenticate } from "../middleware/auth.js";
+} from "../controllers/tax_controller.js";
+import { authenticate } from "../middlewares/auth.js";
 
 const router = express.Router();
 

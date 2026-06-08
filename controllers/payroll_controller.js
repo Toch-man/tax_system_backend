@@ -1,11 +1,11 @@
 import fs from 'fs';
 import csv from 'csv-parser';
 import mongoose from 'mongoose';
-import BatchJob from '../model/batchJobModel.js';
-import TaxHistory from '../model/batchJobModel.js';
-import TaxRule from '../model/taxRuleModel.js';
-import User from '../model/userModel.js';
-import { calculateTax } from '../Services/taxEngine.service.js';
+import BatchJob from '../models/batchJobModel.js';
+import TaxHistory from '../models/batchJobModel.js';
+import TaxRule from '../models/taxRuleModel.js';
+import User from '../models/userModel.js';
+import { calculateTax } from '../services/taxEngine.service.js';
 
 // 1. POST /api/payroll/upload — Stream, Calculate, and Bulk Insert Payroll
 export const uploadPayroll = async (req, res) => {

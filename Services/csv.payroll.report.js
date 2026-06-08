@@ -2,9 +2,9 @@ import xlsx from "xlsx";
 import fsPromises from "fs/promises";
 import path from "path";
 
-import TaxHistory from "../model/taxHistory.js";
-import BatchJob from "../model/batchJobModel.js";
-import GeneratedReport from "../model/generated.reports.model.js";
+import TaxHistory from "../models/taxHistory.js";
+import BatchJob from "../models/batchJobModel.js";
+import GeneratedReport from "../models/generatedReportsModel.js";
 
 const REPORT_DIR = path.resolve("reports");
 

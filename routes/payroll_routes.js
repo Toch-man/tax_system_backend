@@ -7,24 +7,9 @@ import {
     uploadPayroll, 
     getPayrollUploads, 
     getPayrollResultsByUploadId 
-} from '../controller/payroll_controller.js';
-import { authenticate } from '../middleware/auth.js';
+} from '../controllers/payroll_controller.js';
+import { authenticate } from '../middlewares/auth.js';
 
-
-// =========================================================================
-// AUTHENTICATION INTERFACE NOTICE:
-// i am to Change 'protect' to whatever specific function name my teammate exported 
-// in 'middleware/auth.js' file (e.g., verifyToken, authenticateUser).
-// =========================================================================
-//import { protect } from '../middleware/auth.js'; 
-//mock middleware to enable testing, pending creation of actual auth middleware by teammate
-const protect = (req, res, next) => {
-    req.user = {
-        _id: new mongoose.Types.ObjectId('65fd1a2b3c4d5e6f7a8b9c0d'), 
-        role: 'admin'
-    };
-    next(); 
-};
 
 const router = express.Router();
 

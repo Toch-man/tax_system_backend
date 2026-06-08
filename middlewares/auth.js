@@ -3,10 +3,10 @@ import jwt from "jsonwebtoken";
 export const authenticate = async (req, res, next) => {
   const access_token = req.cookies.access_token;
 
-  if (access_token) {
+  if (!access_token) {
     return res.status(403).json({
       success: false,
-      message: "no tokon provided",
+      message: "no token provided",
     });
   }
   try {

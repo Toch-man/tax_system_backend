@@ -1,12 +1,11 @@
-import { generateIndividualPdf } from "../Services/individual.PDF.report.js";
-import { generatePayrollCsv } from "../Services/csv.payroll.report.js";
-import { generatePayrollExcel } from "../Services/excel.payroll.report.js";
+import { generateIndividualPdf } from "../services/individual.PDF.report.js";
+import { generatePayrollCsv } from "../services/csv.payroll.report.js";
+import { generatePayrollExcel } from "../services/excel.payroll.report.js";
 
-
+// GET /api/reports/individual/pdf - Generate Individual PDF Report
 export const individualPdf = async (req, res) => {
   try {
-    // Generate PDF for logged-in user
-    const report = await generateIndividualPdf(req.user._id);
+    const report = await generateIndividualPdf(req.user._id); // Generate PDF report for the authenticated user
 
     // Return report metadata
     return res.json({
@@ -23,7 +22,7 @@ export const individualPdf = async (req, res) => {
   }
 };
 
-
+// POST /api/reports/payroll/csv - Generate Payroll CSV Report
 export const payrollCsv = async (req, res) => {
   try {
     const { batchJobId } = req.body;
@@ -56,7 +55,7 @@ export const payrollCsv = async (req, res) => {
   }
 };
 
-
+// POST /api/reports/payroll/excel - Generate Payroll Excel Report
 export const payrollExcel = async (req, res) => {
   try {
     const { batchJobId } = req.body;

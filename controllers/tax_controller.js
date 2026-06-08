@@ -1,6 +1,6 @@
-import { calculateTax } from "../Services/taxEngine.service.js";
-import TaxRule from "../model/taxRuleModel.js";
-import SavedCalculation from "../model/savedCalculationModel.js";   
+import { calculateTax } from "../services/taxEngine.service.js";
+import TaxRule from "../models/taxRuleModel.js";
+import SavedCalculation from "../models/savedCalculationModel.js";   
 
 //post / tax/ calculate
 export const calculate = async (req, res) => {
