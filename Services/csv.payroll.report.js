@@ -49,6 +49,7 @@ export const generatePayrollCsv = async (
       GrossSalary: record.result?.grossSalary ?? 0,
       TaxableIncome: record.result?.taxableIncome ?? 0,
       AnnualTax: record.result?.annualTax ?? 0,
+      MonthlyTax: record.result?.monthlyTax ?? 0,
       NetSalary: record.result?.netSalary ?? 0,
     }));
 

@@ -43,6 +43,7 @@ export const generatePayrollExcel = async (
       GrossSalary: r.result?.grossSalary ?? 0,
       TaxableIncome: r.result?.taxableIncome ?? 0,
       AnnualTax: r.result?.annualTax ?? 0,
+      MonthlyTax: r.result?.monthlyTax ?? 0,
       NetSalary: r.result?.netSalary ?? 0,
     }));
 

@@ -8,7 +8,7 @@ import {
 } from "../controller/tax_controller.js";
 import { authenticate } from "../middleware/auth.js";
 
-const router = express.router();
+const router = express.Router();
 
 router.post("/calculate", calculate);
 router.get("/rules", getTaxRules);

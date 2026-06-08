@@ -8,6 +8,7 @@ import {
     getPayrollUploads, 
     getPayrollResultsByUploadId 
 } from '../controller/payroll_controller.js';
+import { authenticate } from '../middleware/auth.js';
 
 
 // =========================================================================
@@ -17,7 +18,7 @@ import {
 // =========================================================================
 //import { protect } from '../middleware/auth.js'; 
 //mock middleware to enable testing, pending creation of actual auth middleware by teammate
-const protect = (req, res, next) => {
+const authenticate = (req, res, next) => {
     req.user = {
         _id: new mongoose.Types.ObjectId('65fd1a2b3c4d5e6f7a8b9c0d'), 
         role: 'admin'
@@ -99,20 +100,20 @@ const handleMulterUpload = (req, res, next) => {
  * @desc    Ingest, process, map, and complete batch calculations from a CSV upload.
  * @access  Private (Requires Teammate Auth Token Evaluation)
  */
-router.post('/upload', protect, handleMulterUpload, uploadPayroll);
+router.post('/upload', authenticate, handleMulterUpload, uploadPayroll);
 
 /**
  * @route   GET /api/payroll/uploads
  * @desc    Retrieve systemic log references of all historic upload iterations.
  * @access  Private (Requires Teammate Auth Token Evaluation)
  */
-router.get('/uploads', protect, getPayrollUploads);
+router.get('/uploads', authenticate, getPayrollUploads);
 
 /**
  * @route   GET /api/payroll/uploads/:id/results
  * @desc    Query individual calculated row records belonging to a target batch.
  * @access  Private (Requires Teammate Auth Token Evaluation)
  */
-router.get('/uploads/:id/results', protect, getPayrollResultsByUploadId);
+router.get('/uploads/:id/results', authenticate, getPayrollResultsByUploadId);
 
 export default router;

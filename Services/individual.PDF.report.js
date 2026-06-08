@@ -57,6 +57,7 @@ export const generateIndividualPdf = async (userId) => {
     doc.text(`Gross Salary: ₦${r.result?.grossSalary ?? 0}`);
     doc.text(`Taxable Income: ₦${r.result?.taxableIncome ?? 0}`);
     doc.text(`Annual Tax: ₦${r.result?.annualTax ?? 0}`);
+    doc.text(`Monthly Tax: ₦${r.result?.monthlyTax ?? 0}`);
     doc.text(`Net Salary: ₦${r.result?.netSalary ?? 0}`);
     doc.moveDown();
   });

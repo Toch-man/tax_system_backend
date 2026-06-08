@@ -1,4 +1,6 @@
-import { calculateTax } from "../utils/calculatorTax.js";
+import { calculateTax } from "../Services/taxEngine.service.js";
+import TaxRule from "../model/taxRuleModel.js";
+import savedCalculation from "../model/savedCalculationModel.js";   
 import taxHistory from "../model/taxHistory.js";
 import taxRuleModel from "../model/taxRuleModel.js";
 
@@ -6,9 +8,9 @@ import taxRuleModel from "../model/taxRuleModel.js";
 //post / tax/ calculate
 export const calculate = async (req, res) => {
     try{
-        const { salary, deduction } = req.body;
+        const { salary, deductions } = req.body;
         const rules = await TaxRule.findOne();
-        const result = calaculateTax({ salary, deductions, rules });
+        const result = calculateTax({ salary, deductions, rules });
         return res.status(200).json({ message: "Tax calculated", data: result});
     }catch (error) {
         return res.status(500).json({ message: "Error calculating tax", error });
