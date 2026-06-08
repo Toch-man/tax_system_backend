@@ -176,3 +176,15 @@ export const refresh_token = async (req, res) => {
     });
   }
 };
+
+export const forgot_password = async (req, res) => {
+  const { email } = req.body;
+
+  const user = await User.findOne({ email });
+  if (!user) {
+    return res.status(400).json({
+      success: false,
+      message: "user doesnt exist",
+    });
+  }
+};
