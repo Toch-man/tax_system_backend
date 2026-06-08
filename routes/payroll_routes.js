@@ -18,7 +18,7 @@ import { authenticate } from '../middleware/auth.js';
 // =========================================================================
 //import { protect } from '../middleware/auth.js'; 
 //mock middleware to enable testing, pending creation of actual auth middleware by teammate
-const authenticate = (req, res, next) => {
+const protect = (req, res, next) => {
     req.user = {
         _id: new mongoose.Types.ObjectId('65fd1a2b3c4d5e6f7a8b9c0d'), 
         role: 'admin'
