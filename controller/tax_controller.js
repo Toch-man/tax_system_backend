@@ -1,9 +1,6 @@
 import { calculateTax } from "../Services/taxEngine.service.js";
 import TaxRule from "../model/taxRuleModel.js";
-import savedCalculation from "../model/savedCalculationModel.js";   
-import taxHistory from "../model/taxHistory.js";
-import taxRuleModel from "../model/taxRuleModel.js";
-
+import SavedCalculation from "../model/savedCalculationModel.js";   
 
 //post / tax/ calculate
 export const calculate = async (req, res) => {
@@ -33,7 +30,7 @@ export const saveCalculation = async (req, res) => {
         const { salary, deductions } = req.body;
         const rules = await TaxRule.findOne();
         const result = calculateTax({ salary, deductions, rules });
-        const saved = await savedCalculation.create({ userId: req.user.id, ...result});
+        const saved = await SavedCalculation.create({ userId: req.user.id, ...result});
         return res.status(201).json({ message: "Calculation saved", data: saved });
     }catch (error) {
         res.status(500).json({ message: "Error saving Calculation", error});
@@ -43,7 +40,7 @@ export const saveCalculation = async (req, res) => {
 //get/tax/history
 export const getHistory = async (req, res) => {
     try{
-        const history = await savedCalculation.find({ userId: req.user.id });
+        const history = await SavedCalculation.find({ userId: req.user.id });
         return res.status(200).json({ message: "History fetched", data: history });
     }catch(error) {
         return res.status(500).json({ message: "Error fetching history", error});
@@ -53,10 +50,10 @@ export const getHistory = async (req, res) => {
 export const deleteHistory = async (req, res) => {
     try{
         const { id } = req.params;
-        await savedCalculation.findOneAndDelete({ id: id, userId: req.user.id });
+        await SavedCalculation.findOneAndDelete({ id: id, userId: req.user.id });
         return res.status(200).json({ message: "Calculation deleted successfully"});
     }catch(error) {
-        return res.status(500).json({ nessage: "Error deleting calculation", error})
+        return res.status(500).json({ message: "Error deleting calculation", error})
     };
 };
 
