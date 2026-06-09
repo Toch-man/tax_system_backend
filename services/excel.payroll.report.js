@@ -7,32 +7,20 @@ import GeneratedReport from "../models/generatedReportsModel.js";
 
 const REPORT_DIR = path.resolve("reports");
 
-export const generatePayrollExcel = async (
-  batchJobId,
-  userId,
-) => {
+export const generatePayrollExcel = async (batchJobId, userId) => {
   // Ensure reports directory exists
-  await fsPromises.mkdir(REPORT_DIR, {
-    recursive: true,
-  });
+  await fsPromises.mkdir(REPORT_DIR, { recursive: true });
 
   // Fetch payroll data
-  const records = await TaxHistory.find({
-    batchJobId,
-  })
-    .populate(
-      "userId",
-      "first_name last_name email",
-    )
+  const records = await TaxHistory.find({ batchJobId })
+    .populate("userId", "first_name last_name email")
     .lean();
 
   if (!records.length) {
-    throw new Error(
-      "No records found for this batch job",
-    );
+    throw new Error("No records found for this batch job");
   }
 
-  // Format Excel data
+  // Transform data
   const data = records
     .filter((r) => r.userId)
     .map((r) => ({
@@ -52,24 +40,45 @@ export const generatePayrollExcel = async (
   }
 
   // Create workbook
-  const wb = xlsx.utils.book_new();
-  const ws = xlsx.utils.json_to_sheet(data);
+  const workbook = xlsx.utils.book_new();
 
-  xlsx.utils.book_append_sheet(
-    wb,
-    ws,
-    "Payroll Report",
-  );
+  const worksheet = xlsx.utils.json_to_sheet(data, {
+    header: [
+      "Name",
+      "Email",
+      "Salary",
+      "Deductions",
+      "GrossSalary",
+      "TaxableIncome",
+      "AnnualTax",
+      "MonthlyTax",
+      "NetSalary",
+    ],
+  });
 
-  // Generate file name
+  // Auto column width improvement
+  const colWidths = Object.keys(data[0]).map((key) => ({
+    wch: Math.max(
+      key.length,
+      ...data.map((row) => String(row[key] ?? "").length)
+    ),
+  }));
+
+  worksheet["!cols"] = colWidths; // Set column widths
+
+  xlsx.utils.book_append_sheet(workbook, worksheet, "Payroll Report");
+
+  // File name
   const fileName = `payroll-excel-${batchJobId}-${Date.now()}.xlsx`;
-
   const filePath = path.join(REPORT_DIR, fileName);
 
   // Write file
-  xlsx.writeFile(wb, filePath);
+  xlsx.writeFile(workbook, filePath);
 
-  // Create DB record
+  // Get file stats
+  const stats = await fsPromises.stat(filePath);
+
+  // Save DB record
   const report = await GeneratedReport.create({
     user: userId,
     batchJob: batchJobId,
@@ -77,6 +86,7 @@ export const generatePayrollExcel = async (
     fileName,
     filePath,
     downloadPath: `/reports/${fileName}`,
+    fileSize: stats.size,
     status: "completed",
   });
 
