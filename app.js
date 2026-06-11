@@ -10,8 +10,16 @@ import admin_routes from "./routes/admin_routes.js";
 
 
 const app = express();
-
+//allow cross-origin requests from all origins
 app.use(cors());
+
+
+app.use(cors({
+  origin: 'http://127.0.0.1:5500', // Allow requests from this origin
+  methods: ['GET', 'POST', 'PATCH', 'PUT', 'DELETE'], // Allowed HTTP methods
+  allowedHeaders: ['Content-Type', 'Authorisation'], // Allowed headers
+  credentials: true, // Allow cookies to be sent with requests
+}));
 
 app.use(express.json());
 
