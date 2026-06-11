@@ -15,7 +15,7 @@ app.use(cors());
 
 
 app.use(cors({
-  origin: 'http://127.0.0.1:5500', // Allow requests from this origin
+  origin: 'https://funbililian.github.io/TaxEase/', // Allow requests from this origin
   methods: ['GET', 'POST', 'PATCH', 'PUT', 'DELETE'], // Allowed HTTP methods
   allowedHeaders: ['Content-Type', 'Authorisation'], // Allowed headers
   credentials: true, // Allow cookies to be sent with requests
