@@ -6,7 +6,10 @@ import {
   forgot_password,
   reset_password,
   log_out,
+  get_profile
 } from "../controllers/auth_controller.js";
+
+import { authenticate } from "../middlewares/auth.js";
 
 const router = express.Router();
 
@@ -15,6 +18,7 @@ router.post("/login", login);
 router.get("/refresh_token", refresh_token);
 router.post("/forgot_password", forgot_password);
 router.post("/reset_password", reset_password);
-router.post("/log_out", log_out);
+router.post("/log_out", authenticate, log_out);
+router.get("/profile", authenticate, get_profile);
 
 export default router;

@@ -298,3 +298,19 @@ export const log_out = async (req, res) => {
     });
   }
 };
+
+
+//Get user profile
+export const get_profile = async (req, res) => {
+  try {
+    const user = await User.findById(req.user.id).select("-password");
+
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    return res.status(200).json(user);
+  } catch (err) {
+    return res.status(500).json({ message: err.message });
+  }
+};
