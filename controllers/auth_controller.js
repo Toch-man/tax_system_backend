@@ -124,8 +124,7 @@ export const sign_up = async (req, res) => {
   } catch (error) {
     return res.status(500).json({
       success: false,
-      message: "something went wrong",
-      error,
+      message: `something went wrong ${error}`,
     });
   }
 };
