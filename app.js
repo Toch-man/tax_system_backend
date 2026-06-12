@@ -1,6 +1,7 @@
 import express from "express";
 import cors from "cors";
 import morgan from "morgan";
+import cookieParser from "cookie-parser";
 
 import auth_routes from "./routes/auth_routes.js";
 import tax_routes from "./routes/tax_routes.js";
@@ -10,6 +11,7 @@ import admin_routes from "./routes/admin_routes.js";
 
 const app = express();
 //allow cross-origin requests from all origins
+app.use(cookieParser());
 
 app.use(
   cors({
