@@ -28,7 +28,7 @@ export const getTaxRules = async (req, res) => {
     const rules = await TaxRule.findOne();
     return res.status(200).json({ message: "Tax rules fetched", data: rules });
   } catch (error) {
-    return res.status().jsn({ message: "Error fetching rules", error });
+    return res.status(500).json({ message: "Error fetching rules", error });
   }
 };
 
