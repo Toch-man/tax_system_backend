@@ -1,6 +1,8 @@
 import User from "../models/userModel.js";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
+import crypto from "crypto";
+import { Resend } from "resend";
 
 export const login = async (req, res) => {
   try {
@@ -37,7 +39,6 @@ export const login = async (req, res) => {
 
     await User.findByIdAndUpdate(user._id, { refreshToken: refresh_token });
 
-    user.save();
     res.cookie("access_token", access_token, {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
@@ -83,21 +84,22 @@ export const sign_up = async (req, res) => {
 
     const new_user = new User({
       ...req.body,
+      password: hash_password,
     });
 
     const access_token = jwt.sign(
-      { user_id: user._id, role: user.role },
+      { user_id: new_user._id, role: new_user.role },
       process.env.JWT_ACCESS_SECRET,
       { expiresIn: "15min" },
     );
 
     const refresh_token = jwt.sign(
-      { user_id: user._id, role: user.role },
+      { user_id: new_user._id, role: new_user.role },
       process.env.JWT_REFRESH_SECRET,
       { expiresIn: "7d" },
     );
 
-    new_user.refreshToken = refresh_token;
+    new_user.refresh_token = refresh_token;
 
     res.cookie("access_token", access_token, {
       httpOnly: true,
@@ -113,11 +115,11 @@ export const sign_up = async (req, res) => {
       maxAge: 7 * 24 * 60 * 60 * 1000,
     });
 
-    new_user.save();
+    await new_user.save();
     return res.status(201).json({
       success: true,
       message: "successfull created account",
-      data: user,
+      data: new_user,
     });
   } catch (error) {
     return res.status(500).json({
@@ -129,7 +131,7 @@ export const sign_up = async (req, res) => {
 };
 
 export const refresh_token = async (req, res) => {
-  const refresh_token = req.cookie.refresh_token;
+  const refresh_token = req.cookies.refresh_token;
 
   if (!refresh_token) {
     return res.status(401).json({
@@ -298,7 +300,6 @@ export const log_out = async (req, res) => {
     });
   }
 };
-
 
 //Get user profile
 export const get_profile = async (req, res) => {

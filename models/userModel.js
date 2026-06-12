@@ -23,7 +23,7 @@ const userSchema = new mongoose.Schema(
       default: "user",
     },
 
-    refreshToken: {
+    refresh_token: {
       type: String,
       default: null,
     },
