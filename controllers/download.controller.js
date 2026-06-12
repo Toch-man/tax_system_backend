@@ -1,6 +1,7 @@
 import fs from "fs";
 import GeneratedReport from "../models/generatedReportsModel.js";
 
+// GET /api/reports/download/:id
 export const downloadReport = async (req, res) => {
   try {
     // Find report by ID
@@ -16,9 +17,8 @@ export const downloadReport = async (req, res) => {
     }
 
     // Verify report ownership
-    if (
-      report.user.toString() !== req.user._id.toString()
-    ) {
+    if (!report.user || !report.user.equals(req.user._id)) 
+      {
       return res.status(403).json({
         success: false,
         message: "Access denied",
@@ -41,8 +41,6 @@ export const downloadReport = async (req, res) => {
       });
     }
     
-    await report.save();
-
     // Send file to client
     return res.download(
       report.filePath,

@@ -1,6 +1,7 @@
 import { generateIndividualPdf } from "../services/individual.PDF.report.js";
 import { generatePayrollCsv } from "../services/csv.payroll.report.js";
 import { generatePayrollExcel } from "../services/excel.payroll.report.js";
+import mongoose from "mongoose";
 
 // GET /api/reports/individual/pdf - Generate Individual PDF Report
 export const individualPdf = async (req, res) => {
@@ -10,9 +11,10 @@ export const individualPdf = async (req, res) => {
     // Return report metadata
     return res.json({
       success: true,
+      message: "Report generated successfully",
       reportId: report._id,
       reportType: report.reportType,
-      downloadUrl: `/reports/${report._id}/download`,
+      downloadUrl: `/api/reports/${report._id}/download`,
     });
   } catch (error) {
     return res.status(500).json({
@@ -34,6 +36,12 @@ export const payrollCsv = async (req, res) => {
         message: "batchJobId is required",
       });
     }
+    if (!mongoose.Types.ObjectId.isValid(batchJobId)) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid batchJobId format",
+      });
+    }
 
     // Generate CSV report
     const report = await generatePayrollCsv(
@@ -43,9 +51,10 @@ export const payrollCsv = async (req, res) => {
 
     return res.json({
       success: true,
+      message: "CSV report generated successfully",
       reportId: report._id,
       reportType: report.reportType,
-      downloadUrl: `/reports/${report._id}/download`,
+      downloadUrl: `/api/reports/${report._id}/download`,
     });
   } catch (error) {
     return res.status(500).json({
@@ -67,6 +76,12 @@ export const payrollExcel = async (req, res) => {
         message: "batchJobId is required",
       });
     }
+    if (!mongoose.Types.ObjectId.isValid(batchJobId)) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid batchJobId format",
+      });
+    }
 
     // Generate Excel report
     const report = await generatePayrollExcel(
@@ -76,14 +91,35 @@ export const payrollExcel = async (req, res) => {
 
     return res.json({
       success: true,
+      message: "Excel report generated successfully",
       reportId: report._id,
       reportType: report.reportType,
-      downloadUrl: `/reports/${report._id}/download`,
+      downloadUrl: `/api/reports/${report._id}/download`,
     });
   } catch (error) {
     return res.status(500).json({
       success: false,
       message: error.message,
+    });
+  }
+};
+
+//Get User Reports
+
+export const getUserReports = async (req, res) => {
+  try {
+    const reports = await GeneratedReport.find({ user: req.user._id }).sort({ createdAt: -1 });
+    return res.status(200).json({
+      success: true,
+      message: "User reports retrieved successfully",
+      count: reports.length,
+      data: reports,
+    });
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: "Error retrieving user reports",
+      error: error.message,
     });
   }
 };

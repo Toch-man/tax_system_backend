@@ -4,6 +4,7 @@ import {
   individualPdf,
   payrollCsv,
   payrollExcel,
+  getUserReports,
 } from "../controllers/report.controller.js";
 
 import { downloadReport } from "../controllers/download.controller.js";
@@ -16,6 +17,7 @@ router.get("/individual/pdf", individualPdf);
 router.post("/payroll/csv", payrollCsv);
 router.post("/payroll/excel", payrollExcel);
 router.get("/:id/download", downloadReport);
+router.get("/", getUserReports);
 
 export default router;
 

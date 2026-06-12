@@ -22,7 +22,7 @@ export const generatePayrollExcel = async (batchJobId, userId) => {
 
   // Transform data
   const data = records
-    .filter((r) => r.userId)
+    .filter((r) => r.userId && r.userId.email)
     .map((r) => ({
       Name: `${r.userId.first_name} ${r.userId.last_name}`,
       Email: r.userId.email,
@@ -73,22 +73,27 @@ export const generatePayrollExcel = async (batchJobId, userId) => {
   const filePath = path.join(REPORT_DIR, fileName);
 
   // Write file
-  xlsx.writeFile(workbook, filePath);
+  try {
+    xlsx.writeFile(workbook, filePath);
+    // Get file stats
+    const stats = await fsPromises.stat(filePath);
 
-  // Get file stats
-  const stats = await fsPromises.stat(filePath);
+    // Save DB record
+    const report = await GeneratedReport.create({
+      user: userId,
+      batchJobId,
+      reportType: "payroll_excel",
+      fileName,
+      filePath,
+      fileSize: stats.size,
+      status: "completed",
+    });
 
-  // Save DB record
-  const report = await GeneratedReport.create({
-    user: userId,
-    batchJob: batchJobId,
-    reportType: "payroll_excel",
-    fileName,
-    filePath,
-    downloadPath: `/reports/${fileName}`,
-    fileSize: stats.size,
-    status: "completed",
-  });
-
-  return report;
+    return report;
+  } catch (error) {
+    if (await fsPromises.access(filePath).then(() => true).catch(() => false)) {
+      await fsPromises.unlink(filePath);
+    }
+    throw error;
+  }
 };

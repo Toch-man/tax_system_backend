@@ -8,6 +8,13 @@ const generatedReportSchema = new mongoose.Schema(
       required: true,
     },
 
+
+    batchJobId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "BatchJob",
+      default: null,
+    },
+
     reportType: {
       type: String,
       enum: ["individual_pdf", "payroll_csv", "payroll_excel"],
@@ -24,10 +31,18 @@ const generatedReportSchema = new mongoose.Schema(
       required: true,
     },
 
+    fileSize: {
+      type: Number,
+    },
+
     status: {
       type: String,
       enum: ["processing", "completed", "failed"],
       default: "completed",
+    },
+
+    errorMessage: {
+      type: String,
     },
   },
   {

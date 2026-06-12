@@ -95,22 +95,28 @@ export const generatePayrollCsv = async (batchJobId, userId) => {
   const filePath = path.join(REPORT_DIR, fileName);
 
   // Save file
-  await fsPromises.writeFile(filePath, csvContent, "utf8");
+  try {
+    await fsPromises.writeFile(filePath, csvContent, "utf8");
 
-  // Get file size
-  const stats = await fsPromises.stat(filePath);
+    // Get file size
+    const stats = await fsPromises.stat(filePath);
 
-  // Save report record
-  const report = await GeneratedReport.create({
-    user: userId,
-    batchJob: batchJobId,
-    reportType: "payroll_csv",
-    fileName,
-    filePath,
-    downloadPath: `/reports/${fileName}`,
-    fileSize: stats.size,
-    status: "completed",
-  });
+    // Save report record
+    const report = await GeneratedReport.create({
+      user: userId,
+      batchJobId,
+      reportType: "payroll_csv",
+      fileName,
+      filePath,
+      fileSize: stats.size,
+      status: "completed",
+    });
 
-  return report;
+    return report;
+  } catch (error) {
+    try {
+      await fsPromises.unlink(filePath);
+    } catch {}
+    throw new Error("Failed to generate payroll CSV report: " + error.message);
+  }
 };

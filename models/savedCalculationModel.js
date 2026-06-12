@@ -1,5 +1,14 @@
 import mongoose from "mongoose";
 
+const breakdownSchema = new mongoose.Schema(
+  {
+    rate: String,
+    taxableAmount: Number,
+    taxGenerated: Number,
+  },
+  { _id: false },
+);
+
 const savedCalculationSchema = new mongoose.Schema(
   {
     userId: {
@@ -7,41 +16,26 @@ const savedCalculationSchema = new mongoose.Schema(
       ref: "User",
       required: true,
     },
-
-    salary: {
-      type: Number,
-      required: true,
+    
+    annual: {
+      salary: Number,
+      deduction: Number,
+      rentRelief: Number,
+      taxableIncome: Number,
+      taxBill: Number,
+      netSalary: Number,
     },
 
-    deductions: {
-      type: Number,
-      default: 0,
+    monthly: {
+      salary: Number,
+      deduction: Number,
+      rentRelief: Number,
+      taxableIncome: Number,
+      taxBill: Number,
+      netSalary: Number,
     },
 
-    cra: {
-      type: Number,
-      required: true,
-    },
-
-    taxableIncome: {
-      type: Number,
-      required: true,
-    },
-
-    annualTax: {
-      type: Number,
-      required: true,
-    },
-
-    monthlyTax: {
-      type: Number,
-      required: true,
-    },
-
-    netSalary: {
-      type: Number,
-      required: true,
-    },
+    taxBreakdown: [breakdownSchema],
 
     title: {
       type: String,
