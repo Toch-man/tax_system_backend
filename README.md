@@ -164,6 +164,7 @@ GET /api/reports/individual/pdf
 POST /api/reports/payroll/csv
 POST /api/reports/payroll/excel
 GET /api/reports/:id/download
+GET /api/reports
 ```
 
 ---
