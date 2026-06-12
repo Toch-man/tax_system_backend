@@ -129,6 +129,7 @@ GET  /api/auth/refresh_token
 POST /api/auth/forgot_password
 POST /api/auth/reset_password
 POST /api/auth/log_out
+GET  /api/auth/get_profile
 ```
 
 ---
@@ -187,7 +188,6 @@ PATCH /api/admin/tax-rules/:id
 - Secure file handling
 
 ---
-
 ## Notes
 - Authentication middleware is applied only on protected routes
 - Login and registration routes are public
