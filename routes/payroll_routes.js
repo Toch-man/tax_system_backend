@@ -26,7 +26,7 @@ const storageConfiguration = multer.diskStorage({
     },
     filename: (req, file, cb) => {
         const highPrecisionTimestamp = Date.now();
-        const cryptographicallySecureRandomSuffix = Math.round(Math.random() * 1E9);
+        const cryptographicallySecureRandomSuffix = Math.round(Math.random() * 1e9);
         const fileExtension = path.extname(file.originalname).toLowerCase();
         
         cb(null, `payroll-${highPrecisionTimestamp}-${cryptographicallySecureRandomSuffix}${fileExtension}`);
