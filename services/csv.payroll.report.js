@@ -7,12 +7,11 @@ import GeneratedReport from "../models/generatedReportsModel.js";
 
 const REPORT_DIR = path.resolve("reports");
 
-// Escape CSV values safely
 const escapeCSV = (value) => {
   if (value === null || value === undefined) return "";
+
   const stringValue = String(value);
 
-  // If value contains comma, quote, or newline, wrap in quotes
   if (/[",\n]/.test(stringValue)) {
     return `"${stringValue.replace(/"/g, '""')}"`;
   }
@@ -20,103 +19,224 @@ const escapeCSV = (value) => {
   return stringValue;
 };
 
-export const generatePayrollCsv = async (batchJobId, userId) => {
-  // Ensure reports directory exists
-  await fsPromises.mkdir(REPORT_DIR, { recursive: true });
+export const generatePayrollCsv = async (
+  batchJobId,
+  userId
+) => {
+  await fsPromises.mkdir(REPORT_DIR, {
+    recursive: true,
+  });
 
-  // Validate batch job
-  const batch = await BatchJob.findById(batchJobId);
+  const batch = await BatchJob.findById(
+    batchJobId
+  );
+
   if (!batch) {
     throw new Error("Batch job not found");
   }
 
-  // Fetch payroll records
-  const records = await TaxHistory.find({ batchJobId }).populate(
+  const records = await TaxHistory.find({
+    batchJobId,
+  }).populate(
     "userId",
     "first_name last_name email"
   );
 
   if (!records.length) {
-    throw new Error("No payroll records found for this batch");
+    throw new Error(
+      "No payroll records found for this batch"
+    );
   }
 
-  // Filter valid records
   const formatted = records
     .filter((record) => record.userId)
     .map((record) => ({
       name: `${record.userId.first_name} ${record.userId.last_name}`,
+
       email: record.userId.email,
-      salary: record.input?.salary ?? 0,
-      deductions: record.input?.deductions ?? 0,
-      grossSalary: record.result?.grossSalary ?? 0,
-      taxableIncome: record.result?.taxableIncome ?? 0,
-      annualTax: record.result?.annualTax ?? 0,
-      monthlyTax: record.result?.monthlyTax ?? 0,
-      netSalary: record.result?.netSalary ?? 0,
+
+      annualGrossIncome:
+        record.result?.annual?.grossIncome ?? 0,
+
+      annualPension:
+        record.result?.annual?.pension ?? 0,
+
+      annualNHF:
+        record.result?.annual?.nhf ?? 0,
+
+      annualNHIS:
+        record.result?.annual?.nhis ?? 0,
+
+      annualLifeInsurance:
+        record.result?.annual?.lifeInsurance ??
+        0,
+
+      annualMortgageInterest:
+        record.result?.annual
+          ?.mortgageInterest ?? 0,
+
+      annualRentRelief:
+        record.result?.annual?.rentRelief ?? 0,
+
+      annualDeductions:
+        record.result?.annual?.deductions ?? 0,
+
+      annualTaxableIncome:
+        record.result?.annual?.taxableIncome ??
+        0,
+
+      annualPAYE:
+        record.result?.annual?.paye ?? 0,
+
+      annualNetIncome:
+        record.result?.annual?.netIncome ?? 0,
+
+      monthlyGrossIncome:
+        record.result?.monthly?.grossIncome ??
+        0,
+
+      monthlyPension:
+        record.result?.monthly?.pension ?? 0,
+
+      monthlyNHF:
+        record.result?.monthly?.nhf ?? 0,
+
+      monthlyNHIS:
+        record.result?.monthly?.nhis ?? 0,
+
+      monthlyLifeInsurance:
+        record.result?.monthly?.lifeInsurance ??
+        0,
+
+      monthlyMortgageInterest:
+        record.result?.monthly
+          ?.mortgageInterest ?? 0,
+
+      monthlyRentRelief:
+        record.result?.monthly?.rentRelief ?? 0,
+
+      monthlyDeductions:
+        record.result?.monthly?.deductions ?? 0,
+
+      monthlyTaxableIncome:
+        record.result?.monthly?.taxableIncome ??
+        0,
+
+      monthlyPAYE:
+        record.result?.monthly?.paye ?? 0,
+
+      monthlyNetIncome:
+        record.result?.monthly?.netIncome ?? 0,
     }));
 
   if (!formatted.length) {
-    throw new Error("No valid employee records found");
+    throw new Error(
+      "No valid employee records found"
+    );
   }
 
-  // CSV Header
   const headers = [
     "Name",
     "Email",
-    "Salary",
-    "Deductions",
-    "GrossSalary",
-    "TaxableIncome",
-    "AnnualTax",
-    "MonthlyTax",
-    "NetSalary",
+
+    "AnnualGrossIncome",
+    "AnnualPension",
+    "AnnualNHF",
+    "AnnualNHIS",
+    "AnnualLifeInsurance",
+    "AnnualMortgageInterest",
+    "AnnualRentRelief",
+    "AnnualDeductions",
+    "AnnualTaxableIncome",
+    "AnnualPAYE",
+    "AnnualNetIncome",
+
+    "MonthlyGrossIncome",
+    "MonthlyPension",
+    "MonthlyNHF",
+    "MonthlyNHIS",
+    "MonthlyLifeInsurance",
+    "MonthlyMortgageInterest",
+    "MonthlyRentRelief",
+    "MonthlyDeductions",
+    "MonthlyTaxableIncome",
+    "MonthlyPAYE",
+    "MonthlyNetIncome",
   ];
 
-  // Build CSV rows
   const rows = formatted.map((row) =>
     [
       escapeCSV(row.name),
       escapeCSV(row.email),
-      escapeCSV(row.salary),
-      escapeCSV(row.deductions),
-      escapeCSV(row.grossSalary),
-      escapeCSV(row.taxableIncome),
-      escapeCSV(row.annualTax),
-      escapeCSV(row.monthlyTax),
-      escapeCSV(row.netSalary),
+
+      escapeCSV(row.annualGrossIncome),
+      escapeCSV(row.annualPension),
+      escapeCSV(row.annualNHF),
+      escapeCSV(row.annualNHIS),
+      escapeCSV(row.annualLifeInsurance),
+      escapeCSV(row.annualMortgageInterest),
+      escapeCSV(row.annualRentRelief),
+      escapeCSV(row.annualDeductions),
+      escapeCSV(row.annualTaxableIncome),
+      escapeCSV(row.annualPAYE),
+      escapeCSV(row.annualNetIncome),
+
+      escapeCSV(row.monthlyGrossIncome),
+      escapeCSV(row.monthlyPension),
+      escapeCSV(row.monthlyNHF),
+      escapeCSV(row.monthlyNHIS),
+      escapeCSV(row.monthlyLifeInsurance),
+      escapeCSV(row.monthlyMortgageInterest),
+      escapeCSV(row.monthlyRentRelief),
+      escapeCSV(row.monthlyDeductions),
+      escapeCSV(row.monthlyTaxableIncome),
+      escapeCSV(row.monthlyPAYE),
+      escapeCSV(row.monthlyNetIncome),
     ].join(",")
   );
 
-  // Combine full CSV content
-  const csvContent = [headers.join(","), ...rows].join("\n");
+  const csvContent = [
+    headers.join(","),
+    ...rows,
+  ].join("\n");
 
-  // Create filename
   const fileName = `payroll-${batchJobId}-${Date.now()}.csv`;
-  const filePath = path.join(REPORT_DIR, fileName);
 
-  // Save file
+  const filePath = path.join(
+    REPORT_DIR,
+    fileName
+  );
+
   try {
-    await fsPromises.writeFile(filePath, csvContent, "utf8");
-
-    // Get file size
-    const stats = await fsPromises.stat(filePath);
-
-    // Save report record
-    const report = await GeneratedReport.create({
-      user: userId,
-      batchJobId,
-      reportType: "payroll_csv",
-      fileName,
+    await fsPromises.writeFile(
       filePath,
-      fileSize: stats.size,
-      status: "completed",
-    });
+      csvContent,
+      "utf8"
+    );
+
+    const stats = await fsPromises.stat(
+      filePath
+    );
+
+    const report =
+      await GeneratedReport.create({
+        user: userId,
+        batchJobId,
+        reportType: "payroll_csv",
+        fileName,
+        filePath,
+        fileSize: stats.size,
+        status: "completed",
+      });
 
     return report;
   } catch (error) {
     try {
       await fsPromises.unlink(filePath);
     } catch {}
-    throw new Error("Failed to generate payroll CSV report: " + error.message);
+
+    throw new Error(
+      `Failed to generate payroll CSV report: ${error.message}`
+    );
   }
 };

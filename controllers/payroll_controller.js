@@ -4,7 +4,7 @@ import mongoose from "mongoose";
 import BatchJob from "../models/batchJobModel.js";
 import TaxHistory from "../models/taxHistory.js";
 import User from "../models/userModel.js";
-import { calculateTax } from "../services/taxEngine.service.js";
+import { calculateTax } from "../services/taxEngine.js";
 
 // 1. POST /api/payroll/upload — Stream, Calculate, and Bulk Insert Payroll
 export const uploadPayroll = async (req, res) => {
@@ -53,37 +53,37 @@ export const uploadPayroll = async (req, res) => {
           const matchedUserId = userCacheMap.get(rowEmail) || null;
 
           // Parse inputs defensively; guard against non-numeric values (NaN) or negative numbers
-          const rawSalary = parseFloat(row.salary);
-          const rawDeductions = parseFloat(row.deductions);
-          const rawAnnualRent = parseFloat(row.annualrent) || 0;
-          const salaryInput = isNaN(rawSalary) || rawSalary < 0 ? 0 : rawSalary;
-          const deductionsInput =
-            isNaN(rawDeductions) || rawDeductions < 0 ? 0 : rawDeductions;
-          const annualRentInput = isNaN(rawAnnualRent) || rawAnnualRent < 0 ? 0 : rawAnnualRent;
+          const grossMonthlyIncome = Math.max(
+            0,
+            parseFloat(row.grossmonthlyincome) || 0,
+          );
+          const annualRent = Math.max(0, parseFloat(row.annualrent) || 0);
+          const nhfMonthly = Math.max(0, parseFloat(row.nhfmonthly) || 0);
+          const nhisMonthly = Math.max(0, parseFloat(row.nhismonthly) || 0);
+          const lifeInsuranceMonthly = Math.max(
+            0,
+            parseFloat(row.lifeinsurancemonthly) || 0,
+          );
+          const mortgageInterestMonthly = Math.max(
+            0,
+            parseFloat(row.mortgageinterestmonthly) || 0,
+          );
 
           // Execute team math logic utility function synchronously
           const taxBreakdown = calculateTax({
-            grossSalary: salaryInput,
-            statutoryDeductions: deductionsInput,
-            annualRent: annualRentInput,
+            grossMonthlyIncome,
+            annualRent,
+            nhfMonthly,
+            nhisMonthly,
+            lifeInsuranceMonthly,
+            mortgageInterestMonthly,
           });
 
           // Construct item body matching the exact structural nesting of historySchema
           historyRecordsToInsert.push({
             batchJobId: currentUpload._id,
             userId: matchedUserId,
-            email: rowEmail,
-            input: {
-              salary: salaryInput,
-              deductions: deductionsInput,
-            },
-            result: {
-              grossSalary: taxBreakdown.annual.salary,
-              taxableIncome: taxBreakdown.annual.taxableIncome,
-              annualTax: taxBreakdown.annual.taxBill,
-              monthlyTax: taxBreakdown.monthly.taxBill,
-              netSalary: taxBreakdown.annualnetSalary,
-            },
+            taxBreakdown: taxBreakdown,
           });
         } catch (calcError) {
           fileStream.destroy(calcError);
@@ -104,7 +104,7 @@ export const uploadPayroll = async (req, res) => {
           );
         }
 
-        if (fs.existsSync(filePath)) fs.unlinkSync(filePath);
+        if (fs.existsSync(filePath)) {fs.unlinkSync(filePath);}
 
         if (!res.headersSent) {
           return res.status(500).json({
@@ -152,7 +152,7 @@ export const uploadPayroll = async (req, res) => {
             );
           }
 
-          if (fs.existsSync(filePath)) fs.unlinkSync(filePath);
+          if (fs.existsSync(filePath)) {fs.unlinkSync(filePath);}
 
           if (!res.headersSent) {
             return res.status(500).json({
@@ -167,15 +167,11 @@ export const uploadPayroll = async (req, res) => {
     if (fs.existsSync(filePath)) {
       fs.unlinkSync(filePath);
     }
-    if (!res.headersSent) {
-      return res
-        .status(500)
-        .json({
-          success: false,
-          message: "Server upload initialization failure.",
-          error: error.message,
-        });
-    }
+    return res.status(500).json({
+      success: false,
+      message: "Server upload initialization failure.",
+      error: error.message,
+    });
   }
 };
 // 2. GET /api/payroll/uploads — Fetch Global Batch Upload History Log
@@ -193,13 +189,11 @@ export const getPayrollUploads = async (req, res) => {
       data: uploads,
     });
   } catch (error) {
-    return res
-      .status(500)
-      .json({
-        success: false,
-        message: "Server error retrieving batch history.",
-        error: error.message,
-      });
+    return res.status(500).json({
+      success: false,
+      message: "Server error retrieving batch history.",
+      error: error.message,
+    });
   }
 };
 // 3. GET /api/payroll/uploads/:id/results — Query Batch Content via Window
@@ -209,27 +203,24 @@ export const getPayrollResultsByUploadId = async (req, res) => {
 
     // Pedantic verification: intercept CastErrors gracefully before reaching MongoDB execution layer
     if (!mongoose.Types.ObjectId.isValid(batchJobId)) {
-      return res
-        .status(400)
-        .json({
-          success: false,
-          message: "Invalid batch job ID format supplied.",
-        });
+      return res.status(400).json({
+        success: false,
+        message: "Invalid batch job ID format supplied.",
+      });
     }
 
     const targetJob = await BatchJob.findById(batchJobId);
     if (!targetJob) {
-      return res
-        .status(404)
-        .json({
-          success: false,
-          message: "Target batch job execution record not found.",
-        });
+      return res.status(404).json({
+        success: false,
+        message: "Target batch job execution record not found.",
+      });
     }
 
-
-//
-    const results = await TaxHistory.find({batchJobId}).populate("userId", "first_name last_name email").sort({ createdAt: -1 });
+    //
+    const results = await TaxHistory.find({ batchJobId })
+      .populate("userId", "first_name last_name email")
+      .sort({ createdAt: -1 });
     return res.status(200).json({
       success: true,
       message: "Target payroll calculations breakdown batch slice loaded.",
@@ -237,12 +228,10 @@ export const getPayrollResultsByUploadId = async (req, res) => {
       data: results,
     });
   } catch (error) {
-    return res
-      .status(500)
-      .json({
-        success: false,
-        message: "Server error retrieving batch breakdown details.",
-        error: error.message,
-      });
+    return res.status(500).json({
+      success: false,
+      message: "Server error retrieving batch breakdown details.",
+      error: error.message,
+    });
   }
 };

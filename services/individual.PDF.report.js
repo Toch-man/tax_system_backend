@@ -9,14 +9,24 @@ import GeneratedReport from "../models/generatedReportsModel.js";
 
 const REPORT_DIR = path.resolve("reports");
 
+const formatCurrency = (value = 0) =>
+  `₦${Number(value).toLocaleString("en-NG", {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  })}`;
+
 export const generateIndividualPdf = async (userId) => {
   await fsPromises.mkdir(REPORT_DIR, { recursive: true });
 
   const user = await User.findById(userId);
 
-  if (!user) throw new Error("User not found");
+  if (!user) {
+    throw new Error("User not found");
+  }
 
-  const records = await SavedCalculation.find({ userId }).sort({
+  const records = await SavedCalculation.find({
+    userId,
+  }).sort({
     createdAt: -1,
   });
 
@@ -27,29 +37,187 @@ export const generateIndividualPdf = async (userId) => {
   const fileName = `individual-${userId}-${Date.now()}.pdf`;
   const filePath = path.join(REPORT_DIR, fileName);
 
-  const doc = new PDFDocument();
+  const doc = new PDFDocument({
+    margin: 50,
+  });
+
   const stream = fs.createWriteStream(filePath);
 
   doc.pipe(stream);
 
-  // Header
-  doc.fontSize(18).text("Tax Report", { align: "center" });
+  // =========================
+  // HEADER
+  // =========================
+
+  doc
+    .fontSize(20)
+    .text("Nigeria Tax Report", {
+      align: "center",
+    });
+
   doc.moveDown();
 
-  // User info
-  doc.fontSize(12).text(`Name: ${user.first_name} ${user.last_name}`);
+  doc
+    .fontSize(12)
+    .text(`Name: ${user.first_name} ${user.last_name}`);
+
   doc.text(`Email: ${user.email}`);
-  doc.moveDown();
 
-  // Records
-  records.forEach((r, i) => {
-    doc.fontSize(12).text(`Record ${i + 1}`);
-    doc.text(`Gross Salary: ₦${r.annual?.salary ?? 0}`);
-    doc.text(`Taxable Income: ₦${r.annual?.taxableIncome ?? 0}`);
-    doc.text(`Annual Tax: ₦${r.annual?.taxBill ?? 0}`);
-    doc.text(`Monthly Tax: ₦${r.monthly?.taxBill ?? 0}`);
-    doc.text(`Net Salary: ₦${r.annual?.netSalary ?? 0}`);
+  doc.text(
+    `Generated: ${new Date().toLocaleDateString()}`
+  );
+
+  doc.moveDown(2);
+
+  // =========================
+  // CALCULATIONS
+  // =========================
+
+  records.forEach((record, index) => {
+    const annual = record.annual || {};
+    const monthly = record.monthly || {};
+
+    doc
+      .fontSize(14)
+      .text(`Calculation ${index + 1}`, {
+        underline: true,
+      });
+
+    doc.moveDown(0.5);
+
+    doc.fontSize(11);
+
+    doc.text(`Title: ${record.title}`);
+
+    doc.text(
+      `Created: ${new Date(
+        record.createdAt
+      ).toLocaleString()}`
+    );
+
     doc.moveDown();
+
+    // Annual Summary
+    doc.fontSize(12).text("Annual Summary");
+
+    doc.text(
+      `Gross Income: ${formatCurrency(
+        annual.grossIncome
+      )}`
+    );
+
+    doc.text(
+      `Pension: ${formatCurrency(
+        annual.pension
+      )}`
+    );
+
+    doc.text(
+      `NHF: ${formatCurrency(
+        annual.nhf
+      )}`
+    );
+
+    doc.text(
+      `NHIS: ${formatCurrency(
+        annual.nhis
+      )}`
+    );
+
+    doc.text(
+      `Life Insurance: ${formatCurrency(
+        annual.lifeInsurance
+      )}`
+    );
+
+    doc.text(
+      `Mortgage Interest: ${formatCurrency(
+        annual.mortgageInterest
+      )}`
+    );
+
+    doc.text(
+      `Rent Relief: ${formatCurrency(
+        annual.rentRelief
+      )}`
+    );
+
+    doc.text(
+      `Total Deductions: ${formatCurrency(
+        annual.deductions
+      )}`
+    );
+
+    doc.text(
+      `Taxable Income: ${formatCurrency(
+        annual.taxableIncome
+      )}`
+    );
+
+    doc.text(
+      `PAYE: ${formatCurrency(
+        annual.paye
+      )}`
+    );
+
+    doc.text(
+      `Net Income: ${formatCurrency(
+        annual.netIncome
+      )}`
+    );
+
+    doc.moveDown();
+
+    // Monthly Summary
+    doc.fontSize(12).text("Monthly Summary");
+
+    doc.text(
+      `Gross Income: ${formatCurrency(
+        monthly.grossIncome
+      )}`
+    );
+
+    doc.text(
+      `Pension: ${formatCurrency(
+        monthly.pension
+      )}`
+    );
+
+    doc.text(
+      `PAYE: ${formatCurrency(
+        monthly.paye
+      )}`
+    );
+
+    doc.text(
+      `Net Income: ${formatCurrency(
+        monthly.netIncome
+      )}`
+    );
+
+    doc.moveDown();
+
+    // Tax Breakdown
+    if (record.taxBreakdown?.length) {
+      doc.fontSize(12).text("Tax Breakdown");
+
+      record.taxBreakdown.forEach((band) => {
+        doc.text(
+          `${band.rate} | Taxable: ${formatCurrency(
+            band.taxableAmount
+          )} | Tax: ${formatCurrency(
+            band.taxGenerated
+          )}`
+        );
+      });
+    }
+
+    doc.moveDown(2);
+
+    // Prevent overflow
+    if (index < records.length - 1) {
+      doc.addPage();
+    }
   });
 
   doc.end();
