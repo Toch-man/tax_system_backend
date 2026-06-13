@@ -11,12 +11,14 @@ const profileSchema = new mongoose.Schema(
 
     profileType: {
       type: String,
-      enum: [
-        "employee",
-        "freelancer",
-        "business",
-      ],
+      enum: ["employee", "freelancer", "business"],
       required: true,
+    },
+    full_name: {
+      type: String,
+    },
+    email: {
+      type: String,
     },
 
     //EMPLOYEE
@@ -30,9 +32,8 @@ const profileSchema = new mongoose.Schema(
     freelancerType: String,
 
     averageMonthlyIncome: Number,
-   
-    // BUSINESS OWNER
 
+    // BUSINESS OWNER
 
     businessName: String,
 
@@ -54,7 +55,6 @@ const profileSchema = new mongoose.Schema(
 
     accountNumber: Number,
 
-
     // TAX INFORMATION
     annualRent: Number,
 
@@ -66,7 +66,6 @@ const profileSchema = new mongoose.Schema(
 
     mortgageInterest: Number,
 
-
     profileCompleted: {
       type: Boolean,
       default: false,
@@ -74,10 +73,7 @@ const profileSchema = new mongoose.Schema(
   },
   {
     timestamps: true,
-  }
+  },
 );
 
-export default mongoose.model(
-  "Profile",
-  profileSchema
-);
+export default mongoose.model("Profile", profileSchema);
