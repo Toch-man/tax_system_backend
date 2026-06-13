@@ -15,7 +15,7 @@ app.use(cookieParser());
 
 app.use(
   cors({
-    origin: "https://funbililian.github.io/TaxEase/", // Allow requests from this origin
+    origin: "https://funbililian.github.io", // Allow requests from this origin
     methods: ["GET", "POST", "PATCH", "PUT", "DELETE"], // Allowed HTTP methods
     allowedHeaders: ["Content-Type", "Authorisation"], // Allowed headers
     credentials: true, // Allow cookies to be sent with requests
