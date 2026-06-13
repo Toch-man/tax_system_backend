@@ -19,6 +19,6 @@ router.get("/refresh_token", authenticate, refresh_token);
 router.post("/forgot_password", forgot_password);
 router.post("/reset_password", reset_password);
 router.post("/log_out", authenticate, log_out);
-router.get("/profile", get_profile);
+router.get("/profile", authenticate, get_profile);
 
 export default router;
