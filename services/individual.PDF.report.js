@@ -10,7 +10,7 @@ import GeneratedReport from "../models/generatedReportsModel.js";
 const REPORT_DIR = path.resolve("reports");
 
 const formatCurrency = (value = 0) =>
-  `₦${Number(value).toLocaleString("en-NG", {
+  `NGN${Number(value).toLocaleString("en-NG", {
     minimumFractionDigits: 2,
     maximumFractionDigits: 2,
   })}`;
