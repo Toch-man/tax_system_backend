@@ -2,7 +2,7 @@ import xlsx from "xlsx";
 import path from "path";
 import fsPromises from "fs/promises";
 
-import TaxHistory from "../models/taxHistoryModel.js";
+import TaxHistory from "../models/taxHistory.js";
 import GeneratedReport from "../models/generatedReportsModel.js";
 
 const REPORT_DIR = path.resolve("reports");

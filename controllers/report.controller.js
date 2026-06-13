@@ -6,7 +6,9 @@ import mongoose from "mongoose";
 // GET /api/reports/individual/pdf - Generate Individual PDF Report
 export const individualPdf = async (req, res) => {
   try {
-    const report = await generateIndividualPdf(req.user._id); // Generate PDF report for the authenticated user
+    const report = await generateIndividualPdf(
+  req.user._id || req.user.id || req.user.user_id
+);// Generate PDF report for the authenticated user
 
     // Return report metadata
     return res.json({
