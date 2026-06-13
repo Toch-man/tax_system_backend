@@ -52,7 +52,7 @@ const profileSchema = new mongoose.Schema(
 
     bankName: String,
 
-    accountNumber: String,
+    accountNumber: Number,
 
 
     // TAX INFORMATION
