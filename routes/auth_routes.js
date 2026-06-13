@@ -8,10 +8,7 @@ import {
   log_out,
 } from "../controllers/auth_controller.js";
 
-import {
-  saveProfile,
-  getProfile,
-} from "../controllers/profile.controller.js";
+import { saveProfile, getProfile } from "../controllers/profile.controller.js";
 
 import { authenticate } from "../middlewares/auth.js";
 
@@ -23,7 +20,7 @@ router.get("/refresh_token", authenticate, refresh_token);
 router.post("/forgot_password", forgot_password);
 router.post("/reset_password", reset_password);
 router.post("/log_out", authenticate, log_out);
-router.post("/profile", authenticate, saveProfile);
-router.get("/profile", authenticate, getProfile );
+router.post("/save_profile", authenticate, saveProfile);
+router.get("/profile", authenticate, getProfile);
 
 export default router;
